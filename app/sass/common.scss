@@ -1,0 +1,36 @@
+@import 'bourbon';
+@import 'reset';
+
+html,
+body {
+  font-size: 13px;
+  height: 100%;
+  line-height: 1.5em;
+  margin: 0;
+  height: 100%;
+  user-select: none;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+small {
+  font-size: 12px;
+}
+
+.wc {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+.hbox,
+.vbox {
+  @include align-items(center);
+  @include display(flex);
+}
+
+.vbox {
+  @include flex-direction(column);
+}

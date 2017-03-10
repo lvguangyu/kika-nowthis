@@ -1,0 +1,68 @@
+[
+  {
+    "collection": {
+      "id": "916fe091-3f39-4d96-a528-404d385c9fba",
+      "legacy_id": 5,
+      "name": "World",
+      "namespace": "world",
+      "description": null,
+      "created_at": "2015-08-04T03:13:39Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  },
+  {
+    "collection": {
+      "id": "7c983e51-85df-45ac-8e7e-bc22224d8214",
+      "legacy_id": 4,
+      "name": "Viral",
+      "namespace": "viral",
+      "description": null,
+      "created_at": "2015-08-04T03:13:39Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  },
+  {
+    "collection": {
+      "id": "5545d79b-9712-40d3-ac4c-fca9fe12d862",
+      "legacy_id": 6,
+      "name": "U.S.",
+      "namespace": "us",
+      "description": null,
+      "created_at": "2015-08-04T03:13:39Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  },
+  {
+    "collection": {
+      "id": "f2908299-bc31-4af4-b55a-d1a64b28cd70",
+      "legacy_id": 3,
+      "name": "Sci/Tech",
+      "namespace": "sci-tech",
+      "description": null,
+      "created_at": "2015-08-04T03:13:38Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  },
+  {
+    "collection": {
+      "id": "ad33d5e8-e75b-4ee3-9b9e-a98655942321",
+      "legacy_id": 2,
+      "name": "Politics",
+      "namespace": "politics",
+      "description": null,
+      "created_at": "2015-08-04T03:13:38Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  },
+  {
+    "collection": {
+      "id": "a86d3f78-9e7b-460d-9616-488aa19a113b",
+      "legacy_id": 1,
+      "name": "Entertainment",
+      "namespace": "entertainment",
+      "description": null,
+      "created_at": "2015-08-04T03:13:38Z",
+      "updated_at": "2015-08-04T03:56:00Z"
+    }
+  }
+]

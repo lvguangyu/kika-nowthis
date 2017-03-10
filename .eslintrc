@@ -1,0 +1,19 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "vue"
+  ],
+  "rules": {
+    "semi": [
+      2,
+      "always"
+    ]
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "globals": {
+    "ga": true
+  }
+}
