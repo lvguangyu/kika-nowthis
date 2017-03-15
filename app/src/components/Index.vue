@@ -5,13 +5,13 @@
       <swiper-slide v-for="nav in navs" ><div class="item" :class="{ active: nav.active }" @click="active(nav)">{{ nav.name.toUpperCase() }}</div></swiper-slide>
     </swiper>
   </div>
-  <div class="assets-ctn" @scroll="scroll">
+  <div class="assets-ctn" @scroll="scroll" ref="ctn">
     <ul v-infinite-scroll="loadMore" infinite-scroll-immediate-check="false">
-      <li class="item" v-for="asset in assets" :ref="`${asset.newsId}-ctn`">
+      <li class="item" v-for="(asset, index) in assets" :ref="`${asset.newsId}-ctn`">
         <div class="title" :class="{ touched: asset.touched }">{{ asset.title }}</div>
         <div class="video-ctn">
-          <video :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :poster="asset.imgUrl" :autoplay="false">
-          </video>
+          <video v-if="asset.posterLoaded || index % 20 <= 2" :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :poster="asset.imgUrl" :autoplay="false"></video>
+          <video v-else :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :autoplay="false"></video>
           <div class="button-play" @click="play(asset)" v-if="playing.newsId !== asset.newsId"></div>
         </div>
         <div class="footer hbox">
@@ -113,11 +113,30 @@ export default {
         this.error = true;
       }
     },
+    getPoster (asset) {
+      if (asset.posterLoaded || this.assets.indexOf(asset) % 20 <= 2) {
+        return asset.imgUrl;
+      } else {
+        return undefined;
+      }
+    },
     scroll (evt) {
       if (this.currentPlaying) {
         const ctn = this.$refs[`${this.currentPlaying}-ctn`][0];
-        if (ctn.offsetTop + ctn.offsetHeight < evt.target.scrollTop) {
+        if (ctn.offsetTop + ctn.offsetHeight < evt.target.scrollTop || evt.target.scrollTop + this.$refs['ctn'].offsetHeight < ctn.offsetTop) {
           this.$refs[this.currentPlaying][0].pause();
+        }
+      }
+
+      for (let i = 0; i < this.assets.length; i++) {
+        const asset = this.assets[i];
+
+        if (!asset.posterLoaded) {
+          const ctn = this.$refs[`${asset.newsId}-ctn`][0];
+          if (this.$refs['ctn'].offsetHeight + evt.target.scrollTop + 100 > ctn.offsetTop) {
+            asset.posterLoaded = true;
+            this.$set(this.assets, i, asset);
+          }
         }
       }
     },
@@ -182,18 +201,17 @@ export default {
     },
     play (asset) {
       asset.touched = true;
-      const video = asset;
       if (this.currentPlaying) {
         this.$refs[this.currentPlaying][0].pause();
       }
 
-      const videoEles = this.$refs[video.newsId];
+      const videoEles = this.$refs[asset.newsId];
       if (videoEles) {
         videoEles[0].src = asset.mediaUrl;
         videoEles[0].play();
       }
-      this.currentPlaying = video.newsId;
-      this.playing = video;
+      this.currentPlaying = asset.newsId;
+      this.playing = asset;
     },
     date (input) {
       const date = new Date(input);
