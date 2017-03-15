@@ -6,7 +6,7 @@
     </swiper>
   </div>
   <div class="assets-ctn" @scroll="scroll">
-    <ul v-infinite-scroll="loadMore" infinite-scroll-disabled="loading" infinite-scroll-immediate-check="false">
+    <ul v-infinite-scroll="loadMore" infinite-scroll-immediate-check="false">
       <li class="item" v-for="asset in assets" :ref="`${asset.newsId}-ctn`">
         <div class="title" :class="{ touched: asset.touched }">{{ asset.title }}</div>
         <div class="video-ctn">
@@ -34,6 +34,7 @@
 import { swiper, swiperSlide } from 'vue-awesome-swiper';
 
 const AP = 'http://api-dev.kikakeyboard.com/backend-service-cms/news/nzNews';
+const CACHE_TTL = 1000 * 15;
 
 export default {
   name: 'index',
@@ -55,10 +56,10 @@ export default {
     pageSize: 10
   }),
   async created () {
-    const resp = await this.$http.jsonp(`${AP}/category`);
+    const data = await this.getData(`${AP}/category`);
 
-    for (let i = 0; i < resp.data.data.categories.length; i++) {
-      const item = resp.data.data.categories[i];
+    for (let i = 0; i < data.categories.length; i++) {
+      const item = data.categories[i];
       item.active = false;
       this.navs.push(item);
     }
@@ -75,6 +76,43 @@ export default {
     vm.hideNav = window.innerHeight <= 500;
   },
   methods: {
+    getCache (key) {
+      if (window.localStorage !== undefined) {
+        let cache = localStorage.getItem(key);
+
+        if (!cache) {
+          return undefined;
+        }
+
+        cache = JSON.parse(cache);
+
+        if (Date.now() - cache.createdAt <= CACHE_TTL) {
+          return cache.resp.body.data;
+        }
+      } else {
+        return undefined;
+      }
+    },
+    async getData (url) {
+      const cache = this.getCache(url);
+
+      if (cache) {
+        return cache;
+      }
+
+      try {
+        const resp = await this.$http.jsonp(url);
+        if (window.localStorage !== undefined && resp.status === 200 && resp.body.errorCode === 0) {
+          localStorage.setItem(url, JSON.stringify({
+            resp,
+            createdAt: Date.now()
+          }));
+        }
+        return resp.body.data;
+      } catch (e) {
+        this.error = true;
+      }
+    },
     scroll (evt) {
       if (this.currentPlaying) {
         const ctn = this.$refs[`${this.currentPlaying}-ctn`][0];
@@ -119,8 +157,8 @@ export default {
 
       this.currentTabId = id;
       try {
-        const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
-        this.assets = resp.data.data.newsList;
+        const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+        this.assets = data.newsList;
       } catch (e) {
         this.error = true;
       }
@@ -133,8 +171,8 @@ export default {
         this.loading = true;
 
         try {
-          const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
-          this.assets = this.assets.concat(resp.data.data.newsList);
+          const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+          this.assets = this.assets.concat(data.newsList);
         } catch (e) {
           this.error = true;
         }
