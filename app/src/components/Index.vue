@@ -5,12 +5,12 @@
       <swiper-slide v-for="nav in navs" ><div class="item" :class="{ active: nav.active }" @click="active(nav)">{{ nav.name.toUpperCase() }}</div></swiper-slide>
     </swiper>
   </div>
-  <div class="assets-ctn">
+  <div class="assets-ctn" @scroll="scroll">
     <ul v-infinite-scroll="loadMore" infinite-scroll-disabled="loading" infinite-scroll-immediate-check="false">
-      <li class="item" v-for="asset in assets">
+      <li class="item" v-for="asset in assets" :ref="`${asset.newsId}-ctn`">
         <div class="title" :class="{ touched: asset.touched }">{{ asset.title }}</div>
         <div class="video-ctn">
-          <video :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :src="asset.mediaUrl" :poster="asset.imgUrl" :autoplay="false">
+          <video :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :poster="asset.imgUrl" :autoplay="false">
           </video>
           <div class="button-play" @click="play(asset)" v-if="playing.newsId !== asset.newsId"></div>
         </div>
@@ -22,7 +22,7 @@
     </ul>
     <div v-if="loading || error" class="loading-ctn">
       <div v-if="loading" class="loading"></div>
-      <div v-if="error" class="hint">Error occurs, <span class="button-retry" @click="load">click to reload...</span></div>
+      <div v-else class="hint">Error occurs, <span class="button-retry" @click="load">click to reload...</span></div>
     </div>
   </div>
 </div>
@@ -50,7 +50,7 @@ export default {
     playing: {},
     currentPlaying: '',
     loading: false,
-    error: true,
+    error: false,
     currentTabId: undefined,
     pageSize: 10
   }),
@@ -75,11 +75,19 @@ export default {
     vm.hideNav = window.innerHeight <= 500;
   },
   methods: {
+    scroll (evt) {
+      if (this.currentPlaying) {
+        const ctn = this.$refs[`${this.currentPlaying}-ctn`][0];
+        if (ctn.offsetTop + ctn.offsetHeight < evt.target.scrollTop) {
+          this.$refs[this.currentPlaying][0].pause();
+        }
+      }
+    },
     share (asset) {
       const ap = 'http://aaa.bbb.com?id=';
       const id = asset.newsId;
 
-      kikaopen.shareContent('link', `${ap}${id}`);
+      kikaopen.shareToApp('link', `${ap}${id}`);
     },
     active (item) {
       let currentItem;
@@ -110,9 +118,12 @@ export default {
       this.assets = [];
 
       this.currentTabId = id;
-      const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
-
-      this.assets = resp.data.data.newsList;
+      try {
+        const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+        this.assets = resp.data.data.newsList;
+      } catch (e) {
+        this.error = true;
+      }
 
       this.loading = false;
     },
@@ -121,9 +132,13 @@ export default {
         this.error = false;
         this.loading = true;
 
-        const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+        try {
+          const resp = await this.$http.jsonp(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+          this.assets = this.assets.concat(resp.data.data.newsList);
+        } catch (e) {
+          this.error = true;
+        }
 
-        this.assets = this.assets.concat(resp.data.data.newsList);
         this.loading = false;
       }
     },
@@ -136,6 +151,7 @@ export default {
 
       const videoEles = this.$refs[video.newsId];
       if (videoEles) {
+        videoEles[0].src = asset.mediaUrl;
         videoEles[0].play();
       }
       this.currentPlaying = video.newsId;
