@@ -5,14 +5,15 @@
       <swiper-slide v-for="nav in navs" ><div class="item" :class="{ active: nav.active }" @click="active(nav)">{{ nav.name.toUpperCase() }}</div></swiper-slide>
     </swiper>
   </div>
-  <div class="assets-ctn" @scroll="scroll" ref="ctn">
+  <div class="assets-ctn" :class="{ fullscreen: hideNav }" @scroll="scroll" ref="ctn">
     <ul v-infinite-scroll="loadMore" infinite-scroll-immediate-check="false">
       <li class="item" v-for="(asset, index) in assets" :ref="`${asset.newsId}-ctn`">
         <div class="title" :class="{ touched: asset.touched }">{{ asset.title }}</div>
         <div class="video-ctn">
-          <video v-if="asset.posterLoaded || index % 20 <= 2" :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :poster="asset.imgUrl" :autoplay="false"></video>
-          <video v-else :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :autoplay="false"></video>
+          <video v-if="asset.posterLoaded || index % 20 <= 2" :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :poster="asset.imgUrl" :autoplay="false" @loadstart="asset.loading = true" @playing="asset.loading = false"></video>
+          <video v-else :ref="asset.newsId" class="video" :controls="playing.newsId === asset.newsId" :autoplay="false" @loadstart="asset.loading = true" @playing="asset.loading = false"></video>
           <div class="button-play" @click="play(asset)" v-if="playing.newsId !== asset.newsId"></div>
+          <div v-if="asset.loading" class="loading"></div>
         </div>
         <div class="footer hbox">
           <div class="publish-at">{{ date(asset.addedTime) }}</div>
@@ -177,6 +178,9 @@ export default {
       this.currentTabId = id;
       try {
         const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+        for (let i = 0; i < data.newsList.length; i++) {
+          data.newsList[i].loading = false;
+        }
         this.assets = data.newsList;
       } catch (e) {
         this.error = true;
@@ -191,6 +195,9 @@ export default {
 
         try {
           const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+          for (let i = 0; i < data.newsList.length; i++) {
+            data.newsList[i].loading = false;
+          }
           this.assets = this.assets.concat(data.newsList);
         } catch (e) {
           this.error = true;
@@ -287,6 +294,10 @@ body {
   top: 51px;
   width: 100%;
 
+  &.fullscreen {
+    top: 0;
+  }
+
   .item {
     background: #000;
 
@@ -331,16 +342,6 @@ body {
     padding: 24px 0;
     text-align: center;
 
-    .loading {
-      @include animation(rotate 1s infinite);
-      @include display(inline-block);
-
-      background: url(/images/loading.png);
-      background-size: cover;
-      height: 36px;
-      width: 36px;
-    }
-
     .hint {
       color: #fff;
       font-size: 16px;
@@ -357,16 +358,33 @@ body {
   }
 }
 
+.loading {
+  @include animation(rotate 1s infinite);
+  @include display(inline-block);
+
+  background: url(../../images/loading.png);
+  background-size: cover;
+  height: 36px;
+  width: 36px;
+}
+
 .video-ctn {
   position: relative;
   width: 100%;
+
+  .loading {
+    left: 50%;
+    margin: -18px 0 0 -18px;
+    position: absolute;
+    top: 50%;
+  }
 
   .video {
     width: 100%;
   }
 
   .button-play {
-    background-image: url(/images/play.png);
+    background-image: url(../../images/play.png);
     background-size: cover;
     height: 100px;
     left: 50%;
