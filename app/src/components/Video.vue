@@ -8,7 +8,7 @@
       <div class="button-play" @click="play" v-if="!playing"></div>
     </div>
     <div class="footer hbox">
-      <div class="publish-at">{{ date(video.addedTime) }}</div>
+      <div class="publish-at">{{ date(video.createdTime) }}</div>
       <!--<div class="button-send">SEND</div>-->
     </div>
   </div>

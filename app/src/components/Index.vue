@@ -16,7 +16,7 @@
           <div v-if="asset.loading" class="loading"></div>
         </div>
         <div class="footer hbox">
-          <div class="publish-at">{{ date(asset.addedTime) }}</div>
+          <div class="publish-at">{{ date(asset.createdTime) }}</div>
           <div class="button-send" @click="share(asset)">SEND</div>
         </div>
       </li>
