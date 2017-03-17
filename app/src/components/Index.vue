@@ -70,8 +70,8 @@ export default {
   mounted () {
     const vm = this;
 
-    kikaopen.onWindowChanged = function (fullScreen, width, height) {
-      vm.hideNav = Number(height) <= 500;
+    window.onresize = function () {
+      vm.hideNav = window.innerHeight <= 500;
     };
 
     vm.hideNav = window.innerHeight <= 500;
