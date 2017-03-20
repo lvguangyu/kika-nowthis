@@ -35,7 +35,7 @@
 import { swiper, swiperSlide } from 'vue-awesome-swiper';
 
 const AP = 'http://api-dev.kikakeyboard.com/backend-service-cms/news/nzNews';
-const CACHE_TTL = 1000 * 15;
+const CACHE_TTL = 1000 * 60 * 5;
 
 export default {
   name: 'index',
@@ -177,7 +177,7 @@ export default {
 
       this.currentTabId = id;
       try {
-        const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+        const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.assets.length}`);
         for (let i = 0; i < data.newsList.length; i++) {
           data.newsList[i].loading = false;
         }
@@ -194,7 +194,7 @@ export default {
         this.loading = true;
 
         try {
-          const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.pageSize}&lastId=${this.lastId}`);
+          const data = await this.getData(`${AP}/category?categoryId=${this.currentTabId}&count=${this.assets.length}&lastId=${this.lastId}`);
           for (let i = 0; i < data.newsList.length; i++) {
             data.newsList[i].loading = false;
           }
